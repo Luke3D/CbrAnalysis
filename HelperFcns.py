@@ -5,6 +5,10 @@ def mean_daily_features(Data):
     cols = ['SubjID','Duration_Mean','Duration_Median','Wear Fraction','NewBrace']
     Features = pd.DataFrame(data=[],columns=cols)
 
+    #create dataframe with daily estimates
+    dailyestimates = pd.DataFrame()
+
+
     for newbrace in Data.NewBrace.unique():
         for s in Data.SubjID.unique():
             d = Data[(Data.SubjID==s)&(Data.NewBrace==newbrace)]
@@ -27,6 +31,11 @@ def mean_daily_features(Data):
                 dailydur.append(d.loc[d['Date']==dates,'Duration'].sum()) #daily time
                 dailywf.append(d.loc[d['Date']==dates,'Wear Frac'].mean()) #mean daily wf
 
+
+            dailyestimates = pd.concat((dailyestimates, pd.DataFrame({'Steps':dailysteps, 'Cadence':dailycadence,
+                                        'Time Community':dailydur, 'Wear Fraction':dailywf, 'NewBrace':newbrace}, index=np.tile(s, len(dailysteps)))), axis=0)
+
+            #daily averages
             meandailysteps = np.mean(dailysteps)
             meandailycadence = np.nanmean(dailycadence)
             meandailydur = np.mean(dailydur)
@@ -39,4 +48,4 @@ def mean_daily_features(Data):
             Features = pd.concat([Features,Features_])
             ind+=1
 
-    return Features
+    return Features, dailyestimates
